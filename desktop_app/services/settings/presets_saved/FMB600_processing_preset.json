@@ -1,0 +1,18 @@
+{
+    "accuracy": 0.001,
+    "distance_ground": 0.32,
+    "depth_to": 0.295,
+    "depth_from": 0.2715,
+    "corner_size": 0.25,
+    "voxel_down": 0.0025,
+    "clustering_threshold": 0.001,
+    "min_points_cluster_divider": 18.0,
+    "frame_to_use": 0.0,
+    "precentage_of_average_points_cluster": 0.65,
+    "crop_precentage_x": 1.0,
+    "crop_precentage_z": 1.0,
+    "crop_precentage_y": 1.0,
+    "crop_center_push_x": 0.0,
+    "crop_center_push_y": 0.0,
+    "crop_center_push_z": 0.0
+}
