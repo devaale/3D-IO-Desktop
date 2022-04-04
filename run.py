@@ -106,7 +106,6 @@ def run_gui():
         update_camera_settings,
         manual_reference,
         manual_detect,
-        manual_validation,
     )
 
     app.run()

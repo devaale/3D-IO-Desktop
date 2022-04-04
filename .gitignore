@@ -9,6 +9,10 @@ __pycache__/
 # C extensions
 *.so
 
+# PCD file extensions
+
+*.pcd
+
 # Distribution / packaging
 .Python
 build/

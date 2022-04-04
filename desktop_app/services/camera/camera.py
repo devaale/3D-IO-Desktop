@@ -2,7 +2,6 @@ import pyrealsense2 as rs
 import json
 import time
 
-from desktop_app.services.camera.depth_frame_saver import DepthFrameSaver
 from ...common.logger import logger
 from typing import Tuple
 
@@ -190,8 +189,6 @@ class Camera(object):
             rs.format.z16,
             self.__depth_fps,
         )
-
-        # config.enable_stream(rs.stream.infrared)
 
         config.enable_stream(
             rs.stream.color, self.__width, self.__height, rs.format.bgr8, self.__fps

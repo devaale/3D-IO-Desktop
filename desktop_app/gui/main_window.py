@@ -1,6 +1,7 @@
 from kivymd.app import MDApp
 from kivy.config import Config
-Config.set('graphics','resizable', False)
+
+Config.set("graphics", "resizable", False)
 from kivy.lang import Builder
 from enum import Enum
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -196,7 +197,7 @@ class SettingsSliderCard(MDCard):
         self.main_layout = MDBoxLayout(orientation="vertical")
         self.labels_layout = MDBoxLayout(orientation="horizontal")
         self.slider_layout = MDBoxLayout(orientation="horizontal")
-        
+
         self.minus_btn = MDIconButton(
             icon="minus",
             theme_text_color="Custom",
@@ -314,7 +315,6 @@ class Action(Enum):
     CAMERA_STOP = 40
     REFERENCE = 50
     DETECT = 60
-    VALIDATE = 70
 
 
 class IconListItem(OneLineIconListItem):
@@ -339,7 +339,6 @@ class MainApp(MDApp):
         settings_func,
         inc_ref,
         detect,
-        validate,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -357,7 +356,6 @@ class MainApp(MDApp):
 
         self.__selected = config_options[0]
 
-        self.__validate = validate
         self.__detect = detect
         self.__inc_reference = inc_ref
         self.__set_plc_func = plc_func
@@ -422,13 +420,8 @@ class MainApp(MDApp):
                 action=Action.DETECT.name,
                 text_color=self.theme_service.success_color,
             ),
-            ActionListItem(
-                text="VALIDACIJA-RANKINIS",
-                icon="card-search",
-                action=Action.VALIDATE.name,
-                text_color=self.theme_service.success_color,
-            ),
         ]
+
     def save_settings(self):
         logger.info("[APP]: Saving settings for " + str(self.__selected))
         settings_reader.save_settings_to_file(self.__settings, self.__selected)
@@ -510,8 +503,6 @@ class MainApp(MDApp):
             self.__inc_reference()
         elif Action[selected] is Action.DETECT:
             self.__detect()
-        elif Action[selected] is Action.VALIDATE:
-            self.__validate()
 
         self.actions_menu.dismiss()
 
@@ -533,16 +524,16 @@ class MainApp(MDApp):
 
         for setting in settings_vm[0]["settings"]:
             slider_card = SettingsSliderCard(
-                        setting["label"],
-                        setting["value"],
-                        setting["metric"],
-                        setting["val_mult"],
-                        setting["min_val"],
-                        setting["max_val"],
-                        setting["step"],
-                        self.theme_service,
-                        self.__settings,
-                        setting["name"],
+                setting["label"],
+                setting["value"],
+                setting["metric"],
+                setting["val_mult"],
+                setting["min_val"],
+                setting["max_val"],
+                setting["step"],
+                self.theme_service,
+                self.__settings,
+                setting["name"],
             )
             if setting["type"] is settings_helper.SettingType.ADVANCED.value:
                 self.__advanced_settings_grid.add_widget(slider_card)
@@ -557,13 +548,13 @@ class MainApp(MDApp):
             "account-cog": ["Išplėstiniai nustatymai", "advanced_settings_scr"],
             "database-cog": ["Apdorojimo nustatymai", "processing_settings_scr"],
         }
-        
+
         for icon_name in icons_item.keys():
             item_drawer = ItemDrawer(
-                    icon=icon_name,
-                    text=icons_item[icon_name][0],
-                    to_screen=icons_item[icon_name][1],
-                    text_color=self.theme_service.text_color,
+                icon=icon_name,
+                text=icons_item[icon_name][0],
+                to_screen=icons_item[icon_name][1],
+                text_color=self.theme_service.text_color,
             )
             item_drawer.load_functions = []
             self.root.ids.content_drawer.ids.nav_list.add_widget(item_drawer)

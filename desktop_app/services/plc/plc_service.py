@@ -1,16 +1,12 @@
-from logging import log
 from ...helpers import plc_block_helper, product_helper
-from ...models.enums.product import ProductType
-from ...services import camera
 from ...services.camera.camera_service import CameraService
-from threading import Event, Thread
+from threading import Event
 from .connection_service import PlcConnectionService
 
 from ...helpers import plc_helper
 from ...common.logger import logger
 from ...common.plc_adapter import PlcAdapter
 
-from ..camera.models.enums.camera_command import CameraCommand
 from ...models.plc_block import PlcBlock
 from ...models.enums.plc_block import PLCCommandType, PLCDataType
 import time
