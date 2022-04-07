@@ -1,5 +1,5 @@
 from ...helpers import plc_block_helper, product_helper
-from ...services.camera.camera_service import CameraService
+from ..camera.service import CameraService
 from threading import Event
 from .connection_service import PlcConnectionService
 

@@ -86,19 +86,21 @@ def get_file_to_read(files: List[str], index: int):
 
 
 def visualize_cloud(type: CloudType, count: int):
-    directory = get_clouds_directory(type)
-    files = (
-        get_files_by_date(directory)
-        if type is CloudType.REFERENCE
-        else get_detection_files(directory)
-    )
-    file_to_read = get_file_to_read(files, count)
-    if file_to_read is None:
-        return
+    # directory = get_clouds_directory(type)
+    # files = (
+    #     get_files_by_date(directory)
+    #     if type is CloudType.REFERENCE
+    #     else get_detection_files(directory)
+    # )
+    # file_to_read = get_file_to_read(files, count)
+    # if file_to_read is None:
+    #     return
 
-    cloud = o3d.io.read_point_cloud(file_to_read)
-    print("[READ FILE]: ", os.path.basename(file_to_read))
+    path = "C:/Users/evald/Documents/Coding/Projects/University/3D-IO-Desktop/viewer_app/original_cloud_2_0_2022-04-05__7_23_2_828709.pcd"
 
+    cloud = o3d.io.read_point_cloud(path)
+    print(cloud.get_max_bound())
+    print(cloud.get_min_bound())
     o3d.visualization.draw_geometries([cloud])
 
 

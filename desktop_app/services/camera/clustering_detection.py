@@ -14,9 +14,13 @@ from ...common.logger import logger
 import open3d as o3d
 import copy
 from desktop_app.services.camera.models.enums.cloud_type import CloudType
+from desktop_app.services.file.pcd import PCDFileService
+from desktop_app.errors.file import FileReadError, FileWriteError
 
 MAX_PRODUCTS = 18
 SCAN_REGION_COUNT = 3
+
+file_service = PCDFileService()
 
 
 @timing
@@ -34,13 +38,17 @@ def detect(
 ):
     clouds_to_save = []
     references_copy = references.copy()
+    # for frame in depth_frames:
+    #     summed_cloud += cloud_processing.process_cloud(
+    #         camera_intrinsics, frame, settings
+    #     )
 
-    summed_cloud = o3d.geometry.PointCloud()
+    cloud = file_service.read(
+        "C:/Users/evald/Documents/Coding/Projects/University/3D-IO-Desktop/desktop_app/data/original_cloud_2_0_2022-04-05__7_23_38_397026.pcd"
+    )
 
-    for frame in depth_frames:
-        summed_cloud += cloud_processing.process_cloud(
-            camera_intrinsics, frame, settings
-        )
+    camera_cloud = cloud_processing.remove_points(cloud, settings.get("depth_to"))
+    summed_cloud = cloud_processing.process_cloud_test(camera_cloud, settings)
 
     (
         cloud_to_process,

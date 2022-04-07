@@ -264,6 +264,9 @@ def sum_zones_points_colors_to_cloud(zones: List[Zone]):
 
 
 def sum_points_colors_to_cloud(items):
+    if items is None:
+        return
+
     shared_cloud = o3d.geometry.PointCloud()
 
     for item in items:

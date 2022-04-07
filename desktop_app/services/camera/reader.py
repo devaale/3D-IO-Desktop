@@ -1,7 +1,9 @@
-from typing import Tuple, List
-import pyrealsense2 as rs
-import json
 import time
+import pyrealsense2 as rs
+from typing import Tuple, List
+
+from desktop_app.errors.camera import CameraError
+from desktop_app.services.file.json import JSONFileService
 
 
 class CameraReader:
@@ -19,77 +21,8 @@ class CameraReader:
 
         self._camera = None
         self._pipeline = None
+        self._config = rs.config()
         self._context = rs.context()
-
-    def _get_serials(self):
-        return [x.get_info(rs.camera_info.serial_number) for x in self._context.devices]
-
-    def _find_camera(self, serial_num: str) -> rs.device:
-        serials = self._get_serials()
-
-        try:
-            index = serials.index(serial_num)
-            return self._context.devices[index]
-        except:
-            return None
-
-    def _enable(self, camera: rs.device) -> Tuple[rs.pipeline, bool]:
-        try:
-            serial = camera.get_info(rs.camera_info.serial_number)
-            pipeline = rs.pipeline(self._context)
-            config = rs.config()
-            config.enable_device(serial)
-            config.enable_stream(
-                rs.stream.depth,
-                self._width,
-                self._height,
-                rs.format.z16,
-                self._fps,
-            )
-            config.enable_stream(
-                rs.stream.color,
-                self._width,
-                self._height,
-                rs.format.bgr8,
-                self._fps,
-            )
-            pipeline.start(config)
-            return (pipeline, True)
-        except:
-            print("[Camera Reader] Failed to enable camera")
-            return (None, False)
-
-    def intrinsics(self) -> rs.intrinsics:
-        stream = self._pipeline.get_active_profile().get_stream(rs.stream.depth)
-
-        instrinsics = stream.as_video_stream_profile().get_intrinsics()
-
-        return instrinsics
-
-    def _configure(self, camera: rs.device) -> bool:
-        try:
-            config = self._read_config(self._config_file)
-
-            mode = rs.rs400_advanced_mode(camera)
-
-            mode.toggle_advanced_mode(True)
-
-            time.sleep(self.CONFIG_LOAD_TIME)
-
-            mode.load_json(config)
-
-            return True
-        except:
-            return False
-
-    def _read_config(self, config_file: str) -> str:
-        json_dict = {}
-
-        with open(config_file) as file:
-            for key, value in json.load(file).items():
-                json_dict[key] = value
-
-        return str(json_dict).replace("'", '"')
 
     def read(self, frames: int) -> Tuple[List[rs.video_frame], List[rs.depth_frame]]:
 
@@ -99,9 +32,8 @@ class CameraReader:
         for _ in range(frames):
             try:
                 frames = self._pipeline.wait_for_frames()
-            except Exception as ex:
-                print(f"[Camera reader] Failed to read frames: {ex}")
-                continue
+            except Exception as error:
+                raise CameraError(f"Failed to read frames {error}") from error
 
             depth_frames.append(frames.get_depth_frame())
             color_frames.append(frames.get_color_frame())
@@ -109,25 +41,62 @@ class CameraReader:
         return depth_frames, color_frames
 
     def connect(self) -> bool:
-        camera = self._find_camera(self._serial_num)
+        try:
+            camera = self._find_camera()
 
-        if not camera:
-            return False
+            _ = self._configure(camera)
 
-        configured = self._configure(camera)
+            self._pipeline = self._enable(camera)
 
-        if not configured:
-            return False
-
-        self._pipeline, enabled = self._enable(camera)
-
-        if not enabled:
-            return False
-
-        return True
+            return True
+        except Exception as error:
+            raise CameraError(f"Failed to connect {error}") from error
 
     def disconnect(self) -> bool:
         try:
             self._pipeline.stop()
-        except:
-            print("[Camera Manager] Camera: " + self._serial_num + ", is not started.")
+            return True
+        except Exception as error:
+            raise CameraError(f"Failed to disconnect {error}") from error
+
+    def _find_camera(self) -> rs.device:
+        serials = self._get_serials()
+
+        index = serials.index(self._serial_num)
+
+        return self._context.devices[index]
+
+    def _get_serials(self):
+        return [x.get_info(rs.camera_info.serial_number) for x in rs.context().devices]
+
+    def _configure(self, camera: rs.device) -> None:
+        config = JSONFileService.read(self._config_file)
+
+        mode = rs.rs400_advanced_mode(camera)
+
+        mode.toggle_advanced_mode(True)
+
+        time.sleep(self.CONFIG_LOAD_TIME)
+
+        mode.load_json(config)
+
+    def _enable(self, camera: rs.device) -> rs.pipeline:
+        pipeline = rs.pipeline(self._context)
+        serial = camera.get_info(rs.camera_info.serial_number)
+
+        self._config.enable_device(serial)
+        self._enable_stream(rs.stream.depth, rs.format.z16)
+        self._enable_stream(rs.stream.color, rs.format.bgr8)
+
+        pipeline.start(self._config)
+        return pipeline
+
+    def _enable_stream(self, stream: rs.stream, format: rs.format):
+        self._config.enable_stream(stream, self._width, self._height, format, self._fps)
+
+    def intrinsics(self) -> rs.intrinsics:
+        stream = self._pipeline.get_active_profile().get_stream(rs.stream.depth)
+
+        instrinsics = stream.as_video_stream_profile().get_intrinsics()
+
+        return instrinsics

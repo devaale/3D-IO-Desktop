@@ -8,6 +8,7 @@ laser_sensor = None
 camera_service = None
 camera_service_thread = None
 
+processing_service = None
 plc_service = None
 plc_service_thread = None
 plc_conn_service = None
@@ -46,7 +47,6 @@ def set_camera_service(on: bool):
 def start_camera_service():
     global camera_service, camera_service_thread
     if camera_service_thread is None:
-        # start_laser_sensor()
         camera_service_thread = Thread(target=camera_service.run)
         camera_service_thread.setDaemon(True)
         camera_service_thread.start()
@@ -76,7 +76,8 @@ def stop_file_service():
 
 
 def update_camera_settings(product_model):
-    camera_service.update_settings(product_model)
+    product = product_helper.get_product_by_model(product_model)
+    processing_service.product(product)
 
 
 def manual_validation():
@@ -122,11 +123,9 @@ if __name__ == "__main__":
     from threading import Thread
     from multiprocessing import Manager, freeze_support
     from threading import Event
-
-    from desktop_app.services.plc.plc_service import PlcService
     from desktop_app.services.plc.connection_service import PlcConnectionService
 
-    from desktop_app.services.camera.camera_service import CameraService
+    from desktop_app.services.camera.service import CameraService
     from desktop_app.common.plc_adapter import PlcAdapter
     from desktop_app.common.logger import logger
     from desktop_app.common.file_service import FileService
@@ -134,6 +133,7 @@ if __name__ == "__main__":
     from desktop_app.helpers import product_helper
     from desktop_app.app.database import init_db, populate_default_db
     from desktop_app.gui.main_window import MainApp
+    from desktop_app.services.processing.service import ProcessingService
 
     freeze_support()
     atexit.register(exit)
@@ -147,21 +147,9 @@ if __name__ == "__main__":
 
     plc_conn_service = PlcConnectionService(plc_adapter=plc_adapter)
 
+    proc_service = ProcessingService()
     camera_service = CameraService(
-        manager=manager,
-        plc_adapter=plc_adapter,
-        sensor_trigger_event=sensor_trigger_event,
-        processing_done_event=processing_done_event,
-        plc_start_event=plc_start_event,
-    )
-
-    plc_service = PlcService(
-        plc_adapter=plc_adapter,
-        camera_service=camera_service,
-        conn_service=plc_conn_service,
-        camera_trigger_event=sensor_trigger_event,
-        processing_done_event=processing_done_event,
-        plc_start_event=plc_start_event,
+        sensor_trigger_event=sensor_trigger_event, proc_service=processing_service
     )
     file_service = FileService()
 
