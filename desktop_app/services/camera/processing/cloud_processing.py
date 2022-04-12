@@ -459,7 +459,6 @@ def __find_clusters(
             points_clusters[label] = points_clusters.get(label, [])
             points_clusters[label].append(point)
 
-    print("[Cloud Processing] Clusters found: ", len(list(points_clusters.keys())))
     return points_clusters
 
 

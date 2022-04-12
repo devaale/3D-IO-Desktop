@@ -49,6 +49,8 @@ def detect(
         summed_cloud, selected_product, settings, camera_position
     )
 
+    # o3d.visualization.draw_geometries([summed_cloud])
+
     clouds_to_save.append((copy.deepcopy(original_cloud), CloudType.ORIGINAL))
     clouds_to_save.append((copy.deepcopy(cloud_to_process), CloudType.PROCESSED))
 

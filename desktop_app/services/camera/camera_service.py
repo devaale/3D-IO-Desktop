@@ -89,7 +89,7 @@ class CameraService:
             848,
             480,
             30,
-            "138422075111",
+            "823112061406",
             "C:/Users/evald/Documents/Coding/Projects/University/3D-IO-Desktop/desktop_app/services/camera/configs/camera/no_auto_exp_second_peak.json",
         )
         self.__result_visualizer = ResultVisualizer()
